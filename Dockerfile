@@ -1,7 +1,6 @@
-#FROM php:7.2-fpm-alpine
 FROM php:7.2-fpm
+MAINTAINER Usman Akram <usman.akram99@gmail.com>
 
-#RUN docker-php-ext-install pdo pdo_mysql
 RUN apt-get update && apt-get -y install git && apt-get -y install zip && apt-get -y install supervisor cron
 
 RUN  apt-get install -y libmcrypt-dev \
