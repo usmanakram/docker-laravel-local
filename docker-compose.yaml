@@ -1,0 +1,89 @@
+version: '3'
+
+services:
+
+  # Application
+  app:
+    container_name: laravel_app
+    image: laravel_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/var/www/html
+    # ports:
+    #   - '9000:9000'
+    depends_on:
+      - database
+    networks:
+      - laravel
+
+  # Web Server
+  server:
+    container_name: nginx_server
+    image: nginx:stable-alpine
+    ports:
+      - '8080:80'
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      # - ./src/storage/logs/:/var/log/nginx
+    depends_on:
+      - app
+      - database
+    networks:
+      - laravel
+
+  # Database
+  database:
+    container_name: mysql_database
+    image: mysql:5.7.22
+    restart: unless-stopped
+    ports:
+      - '3306:3306'
+    volumes:
+      # For specified directory
+      - ./database:/var/lib/mysql
+      # For named volume (Named volumes must be listed under the top-level volumes key)
+      # - dbdata:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: homestead
+      MYSQL_USER: homestead
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    networks:
+      - laravel
+
+  # phpMyAdmin
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - '8090:80'
+    environment:
+      PMA_HOST: database
+      MYSQL_ROOT_PASSWORD: secret
+    depends_on:
+      - database
+    networks:
+      - laravel
+
+  # Composer
+  composer:
+    container_name: composer
+    image: composer:latest
+    volumes:
+      - ./src:/var/www/html
+    working_dir: /var/www/html
+    depends_on:
+      - app
+    networks:
+      - laravel
+
+networks:
+  laravel:
+
+# Named volumes must be listed under the top-level volumes key, as shown.
+# volumes:
+#   dbdata:
